@@ -22,6 +22,13 @@ export const config = {
     sessionName: process.env.FLARESOLVERR_SESSION || 'myinstants-soundboard',
   },
 
+  // Text to speech (/read)
+  tts: {
+    defaultVoice: process.env.TTS_DEFAULT_VOICE || 'catalina', // Voice id, see src/tts/voices.js
+    maxLength: intFromEnv('TTS_MAX_LENGTH', 1000), // Characters per /read (Discord allows up to 6000)
+    maxQueue: 10, // Waiting reads, and waiting sounds, per guild
+  },
+
   // Logging Configuration
   log: {
     dir: process.env.LOG_DIR || 'logs',

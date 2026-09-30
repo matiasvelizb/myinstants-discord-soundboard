@@ -150,10 +150,10 @@ export class Logger {
   /**
    * Log a user activity: who did what with which sound, and whether it worked
    * Output: "2026-09-22 14:30:05 | PLAY   | OK    | Server (id) | user (id) | Sound | voice: General | via: button"
-   * @param {string} action - PLAY, ADD, DELETE, STOP
+   * @param {string} action - PLAY, ADD, DELETE, STOP, READ, VOICE
    * @param {string} status - OK, ERROR, SKIP
    * @param {Object} interaction - Discord interaction
-   * @param {Object} details - Optional { sound, channel, via, reason }
+   * @param {Object} details - Optional { sound, channel, via, reason }; for READ, sound is the text and via the voice
    */
   static activity(action, status, interaction, { sound, channel, via, reason } = {}) {
     const parts = [

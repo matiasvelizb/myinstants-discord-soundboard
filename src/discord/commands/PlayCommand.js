@@ -94,12 +94,14 @@ export class PlayCommand {
     }
 
     const title = cleanTitle(sound.title);
-    const playError = await this.audioService.play(interaction, channel, sound, '/play');
-    if (playError) {
-      return interaction.editReply(`❌ Failed to play **${title}**: ${playError}`);
+    const played = await this.audioService.play(interaction, channel, sound, '/play');
+    if (played.error) {
+      return interaction.editReply(`❌ Failed to play **${title}**: ${played.error}`);
     }
 
-    await interaction.editReply(`🔊 Playing: **${title}**`);
+    await interaction.editReply(
+      played.queued ? `⏳ Queued (#${played.position}): **${title}**` : `🔊 Playing: **${title}**`
+    );
     setTimeout(() => interaction.deleteReply().catch(() => {}), 2000);
   }
 

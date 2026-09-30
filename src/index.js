@@ -2,8 +2,10 @@ import { Client, Events, GatewayIntentBits, MessageFlags } from 'discord.js';
 import { config } from './config/config.js';
 import { openDatabase } from './database/db.js';
 import { SoundRepository } from './database/SoundRepository.js';
+import { VoiceRepository } from './database/VoiceRepository.js';
 import { AudioStore } from './database/AudioStore.js';
 import { ScraperService } from './myinstants/ScraperService.js';
+import { TtsService } from './tts/TtsService.js';
 import { VoiceService } from './discord/services/VoiceService.js';
 import { DashboardService } from './discord/services/DashboardService.js';
 import { AudioService } from './discord/services/AudioService.js';
@@ -11,6 +13,8 @@ import { PlayCommand } from './discord/commands/PlayCommand.js';
 import { StopCommand } from './discord/commands/StopCommand.js';
 import { SoundsCommand } from './discord/commands/SoundsCommand.js';
 import { DeleteCommand } from './discord/commands/DeleteCommand.js';
+import { ReadCommand } from './discord/commands/ReadCommand.js';
+import { VoiceCommand } from './discord/commands/VoiceCommand.js';
 import { registerCommands } from './discord/utils/register-commands.js';
 import { Logger } from './utils/logger.js';
 
@@ -22,8 +26,10 @@ class Bot {
 
     this.db = openDatabase();
     this.soundRepository = new SoundRepository(this.db);
+    this.voiceRepository = new VoiceRepository(this.db);
     this.scraperService = new ScraperService();
     this.voiceService = new VoiceService();
+    this.ttsService = new TtsService();
     this.audioService = new AudioService(this.soundRepository, this.scraperService, this.voiceService, new AudioStore());
     this.dashboardService = new DashboardService(this.soundRepository, this.client);
 
@@ -32,6 +38,8 @@ class Bot {
       stop: new StopCommand(this.voiceService),
       sounds: new SoundsCommand(this.dashboardService),
       delete: new DeleteCommand(this.soundRepository, this.audioService, this.dashboardService),
+      read: new ReadCommand(this.ttsService, this.voiceRepository, this.audioService, this.voiceService),
+      voice: new VoiceCommand(this.ttsService, this.voiceRepository),
     };
 
     this.client.once(Events.ClientReady, async () => {
@@ -40,7 +48,7 @@ class Bot {
         userId: this.client.user.id,
         guildCount: this.client.guilds.cache.size,
       });
-      await registerCommands([PlayCommand, StopCommand, SoundsCommand, DeleteCommand])
+      await registerCommands([PlayCommand, StopCommand, SoundsCommand, DeleteCommand, ReadCommand, VoiceCommand])
         .catch((error) => Logger.error('Failed to register slash commands', {}, error));
     });
 

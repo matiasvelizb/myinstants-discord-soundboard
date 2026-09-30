@@ -59,20 +59,23 @@ export class AudioService {
    * @param {Object} channel - Voice channel
    * @param {Object} sound - Sound row
    * @param {string} via - '/play' or 'button'
-   * @returns {Promise<string|null>} - Error message, or null on success
+   * @returns {Promise<{error?: string, queued?: boolean, position?: number}>} - queued when it waits for a read to finish
    */
   async play(interaction, channel, sound, via) {
     const context = { via, sound: cleanTitle(sound.title), channel: channel.name };
 
     try {
       const audioPath = await this.getAudioPath(sound.sound_url);
-      await this.voiceService.play(channel, audioPath);
+      const { queued, position } = await this.voiceService.play(channel, audioPath);
       this.soundRepository.incrementPlays(sound.id);
-      Logger.activity('PLAY', 'OK', interaction, context);
-      return null;
+      Logger.activity('PLAY', 'OK', interaction, {
+        ...context,
+        reason: queued ? `queued #${position} behind read` : undefined,
+      });
+      return { queued, position };
     } catch (error) {
       Logger.activity('PLAY', 'ERROR', interaction, { ...context, reason: error.message });
-      return error.message;
+      return { error: error.message };
     }
   }
 
@@ -103,7 +106,7 @@ export class AudioService {
     }
 
     await interaction.deferUpdate();
-    const playError = await this.play(interaction, channel, sound, 'button');
+    const { error: playError } = await this.play(interaction, channel, sound, 'button');
     if (playError) {
       await interaction.followUp({
         content: `❌ Failed to play **${cleanTitle(sound.title)}**: ${playError}`,

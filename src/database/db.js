@@ -16,6 +16,10 @@ const SCHEMA = `
   );
   CREATE INDEX IF NOT EXISTS idx_sounds_recent ON sounds (guild_id, created_at DESC);
   CREATE INDEX IF NOT EXISTS idx_sounds_popular ON sounds (guild_id, play_count DESC);
+  CREATE TABLE IF NOT EXISTS user_voices (
+    user_id TEXT PRIMARY KEY,
+    voice TEXT NOT NULL
+  );
 `;
 
 /**
